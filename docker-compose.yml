@@ -1,0 +1,17 @@
+version: "3"
+services:
+  nest:
+    container_name: car-application
+    restart: always
+    build: ./nest-app
+    ports:
+      - "3000:3000"
+    links:
+      - mongo
+    command:  npm start
+  mongo:
+    container_name: mongo-cont
+    image: mongo
+    restart: always
+    ports:
+      - "27017:27017"
