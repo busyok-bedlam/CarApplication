@@ -7,3 +7,9 @@ services:
     ports:
       - "3000:3000"
     command: npm run start:dev
+  mongo:
+    container_name: mongo-cont
+    image: mongo
+    restart: always
+    ports:
+      - "27017:27017"
