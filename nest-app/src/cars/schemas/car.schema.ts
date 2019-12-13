@@ -1,5 +1,4 @@
-import * as mongoose from 'mongoose';
-const { Schema } = mongoose;
+import { Schema } from 'mongoose';
 
 export const CarSchema = new Schema({
 	price: {
@@ -7,13 +6,11 @@ export const CarSchema = new Schema({
 		required: true
 	},
 	manufacturer: {
-		type: Boolean,
+		type: Schema.Types.ObjectId,
 		required: true
 	},
 	firstRegistration: {
 		type: Date,
-		required: true,
-		default:  new Date()
 	},
-	owners: [Number]
+	owners: [{ type: Schema.Types.ObjectId, ref: 'Owner' }]
 })

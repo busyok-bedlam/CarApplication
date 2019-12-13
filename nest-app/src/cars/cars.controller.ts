@@ -1,7 +1,7 @@
 import { HttpException, Controller, Get, Post, Put, Delete, Request,Res, Body, Patch, Query, Param, HttpStatus } from '@nestjs/common';
 import { Response  } from 'express';
 
-import { CarInterface } from './interfaces/car.interface';
+import { Car } from './interfaces/car.interface';
 import { CarDto } from './dto/car.dto';
 import { CarsService } from './cars.service';
 

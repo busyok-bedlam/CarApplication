@@ -1,14 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { Model  } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { CarInterface } from './interfaces/car.interface';
+import { Car } from './interfaces/car.interface';
+import { Owner } from './interfaces/owner.interface';
+import { Manufacturer } from './interfaces/manufacturer.interface'
+
 
 
 @Injectable()
 export class CarsService {
-	constructor(@InjectModel('Car') private readonly carModel: Model<CarInterface>){}
+	constructor(
+		@InjectModel('Car') private readonly carModel: Model<Car>, 
+		@InjectModel('Owner') private readonly ownerModel: Model<Owner>,
+		@InjectModel('Manufacturer') private readonly manufacturerModel: Model<Manufacturer>
+	){}
 
-	async createCar(carInfo: CarInterface){
+	async createCar(carInfo: Car){
 		try {
 			let car = await new this.carModel(carInfo).save();	
 			return car;
