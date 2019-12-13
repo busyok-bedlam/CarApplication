@@ -17,8 +17,36 @@ export class CarsService {
 
 	async createCar(carInfo: Car){
 		try {
-			let car = await new this.carModel(carInfo).save();	
-			return car;
+			const { manufacturer } = carInfo;
+			// await new this.manufacturerModel(manufacturer).save();
+			let existingManufacturer = await this.manufacturerModel.findOne({
+				name: manufacturer.name
+			})
+			if(existingManufacturer) {
+				const carModelData = { ...carInfo, manufacturer: existingManufacturer._id  }
+				const car = await new this.carModel(carModelData).save();
+				console.log(car);
+			}
+			// .exec(async doc => {
+			//   if(doc) {
+			//     const id = await doc._id;
+			//     const result = { ...carInfo, manufacturer: id };
+			//     const car = await new this.carModel(result).save();
+			//     return car;
+			//   } else {
+			//     const newManufacturer = new this.manufacturerModel({
+			//       _id: new mongoose.Types.ObjectId(),
+			//       ...manufacturer
+			//     })
+			//     await newManufacturer.save()
+			//     .exec(async doc => {
+			//       const id = await newManufacurer._id;
+			//       const result = { ...carInfo, manufacturer: id };
+			//       const car = await new this.carModel(result).save();
+			//       return car;
+			//     })
+			//   }
+			// })
 		}
 		catch(err) {
 			throw err;	
@@ -62,17 +90,17 @@ export class CarsService {
 		catch(err) {
 
 		}
-		
+
 	}
 
 
 
 	async getManufacturerDataByCarsID() {
-		
+
 	}
-	
+
 	async deleteOldBuyOwner() {
-		
+
 	}
 
 	async applyDiscountForCars() {
