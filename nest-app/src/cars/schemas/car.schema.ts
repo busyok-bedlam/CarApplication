@@ -7,10 +7,11 @@ export const CarSchema = new Schema({
 	},
 	manufacturer: {
 		type: Schema.Types.ObjectId,
+		ref: 'Manufacturer',
 		required: true
 	},
 	firstRegistration: {
-		type: Date,
+		type: Date
 	},
 	owners: [{ type: Schema.Types.ObjectId, ref: 'Owner' }]
 })

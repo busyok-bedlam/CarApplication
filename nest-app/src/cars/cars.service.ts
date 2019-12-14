@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Car } from './interfaces/car.interface';
 import { Owner } from './interfaces/owner.interface';
 import { Manufacturer } from './interfaces/manufacturer.interface'
+import * as mongoose from 'mongoose';
 
 
 
@@ -15,50 +16,61 @@ export class CarsService {
 		@InjectModel('Manufacturer') private readonly manufacturerModel: Model<Manufacturer>
 	){}
 
-	async createCar(carInfo: Car){
+	async createCar(carInfo: Car): Promise<Car>{
 		try {
 			const { manufacturer } = carInfo;
-			// await new this.manufacturerModel(manufacturer).save();
 			let existingManufacturer = await this.manufacturerModel.findOne({
 				name: manufacturer.name
 			})
 			if(existingManufacturer) {
 				const carModelData = { ...carInfo, manufacturer: existingManufacturer._id  }
 				const car = await new this.carModel(carModelData).save();
-				console.log(car);
+				return car;
+			} else {
+
+				const newManufacturer = await new this.manufacturerModel({
+					_id: new mongoose.Types.ObjectId(),
+					...manufacturer
+				});
+				await newManufacturer.save();
+				const carModelData = { ...carInfo, manufacturer: newManufacturer._id };
+				const car = await new this.carModel()
+				return car;
 			}
-			// .exec(async doc => {
-			//   if(doc) {
-			//     const id = await doc._id;
-			//     const result = { ...carInfo, manufacturer: id };
-			//     const car = await new this.carModel(result).save();
-			//     return car;
-			//   } else {
-			//     const newManufacturer = new this.manufacturerModel({
-			//       _id: new mongoose.Types.ObjectId(),
-			//       ...manufacturer
-			//     })
-			//     await newManufacturer.save()
-			//     .exec(async doc => {
-			//       const id = await newManufacurer._id;
-			//       const result = { ...carInfo, manufacturer: id };
-			//       const car = await new this.carModel(result).save();
-			//       return car;
-			//     })
-			//   }
-			// })
 		}
 		catch(err) {
 			throw err;	
 		}
 	}
+
 	async findAllCars() {
 		try {
-			let cars = await this.carModel.find({});
+			let cars = await this.carModel.find().populate('manufacturer');
 			return cars;
 		} 
 		catch(err) {
 			throw err;	
+		}
+	}
+
+	async findOneCar(carID) {
+		try {
+			let car = await this.carModel.findOne({ "_id": carID });
+			return car;
+		}
+		catch(err) {
+			throw err;
+		}
+	}
+
+	async findManufacturerByCarId(carID) {
+		try {
+			let car = await this.carModel.findById(carID).populate('manufacturer');
+			const { manufacturer } = car;
+			return manufacturer;
+		}
+		catch(err) {
+			throw err;
 		}
 	}
 
@@ -82,6 +94,24 @@ export class CarsService {
 		}
 	}
 
+	async registrateCar(id): Promise<Car> {
+		try {
+			const selectedCar = await this.carModel.findById(id);
+			if(selectedCar) {
+				if(!selectedCar.firstRegistration) {
+					const updatedCar = await this.carModel.findByIdAndUpdate(id, { firstRegistration: new Date() })
+					return updatedCar;
+				} else {
+					return selectedCar;
+				}
+			} else {
+				throw new Error("No selected car");
+			}
+		}
+		catch(err) {
+			throw err;
+		}
+	}
 	async updateCar(id, patch) {
 		try {
 			let updatedCar = await this.carModel.update({"_id": id}, { ...patch })
@@ -93,7 +123,23 @@ export class CarsService {
 
 	}
 
+	async sellCar(id, owner: Owner) {
+		try {
+			const ownerID = new mongoose.Types.ObjectId()
+			const newOwner = new this.ownerModel({
+				_id: ownerID,
+				...owner
+			});
+			await newOwner.save();
+			const car = await this.carModel.findByIdAndUpdate(id, {$push: { owners: ownerID }});
 
+			return car;
+
+		}
+		catch(err) {
+			throw err;
+		}
+	}
 
 	async getManufacturerDataByCarsID() {
 

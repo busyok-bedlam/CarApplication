@@ -8,6 +8,7 @@ export const OwnerSchema = new Schema({
 
 	purchaseDate: {
 		type: Date,
-		required: false
+		required: true,
+		default: new Date()
 	}
 })
