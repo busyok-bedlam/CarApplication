@@ -1,4 +1,5 @@
 import { Schema } from 'mongoose';
+import { CarSchema } from './car.schema';
 
 export const OwnerSchema = new Schema({
 	name: {
@@ -12,3 +13,4 @@ export const OwnerSchema = new Schema({
 		default: new Date()
 	}
 })
+

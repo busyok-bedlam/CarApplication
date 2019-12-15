@@ -2,7 +2,7 @@ import { Schema } from 'mongoose';
 
 export const CarSchema = new Schema({
 	price: {
-		type: String,
+		type: Number,
 		required: true
 	},
 	manufacturer: {

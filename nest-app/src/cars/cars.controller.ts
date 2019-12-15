@@ -24,13 +24,14 @@ export class CarsController {
 	@Get(':id')
 	async findOneCar(@Param() params, @Query() query, @Res() res: Response): Promise<any> {
 		try {
+			const { id } = params;
 			if(query.onlymanufacturer) {
-				let id: string = params.id;
 				const manufacturer = await this.carService.findManufacturerByCarId(id);
 				res.status(HttpStatus.OK).json(manufacturer);
 			} else {
+				const car = this.carService.findOneCar(id);
 				res.status(HttpStatus.OK).json({
-					id: params.id
+					car,
 				})
 			}	
 
@@ -64,15 +65,13 @@ export class CarsController {
 			} else {
 				throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);	
 			}
-
 		}
 		catch(err) {
 			throw err;
 		}
-		return ('CHANGE CAR');
 	}
 
-	@Patch(':id/registrate')
+	@Put(':id/registration')
 	async registrateCar(@Param() params, @Res() res: Response) {
 		try {
 			const { id } = params;
@@ -86,15 +85,28 @@ export class CarsController {
 		}
 	}
 
-	@Patch(':id/sell-car')
+	@Patch(':id/sale')
 	async sellCar(@Param() params, @Body() ownerBody: Owner, @Res() res: Response) {
 		try {
 			const { id } = params;
-			const selledCar = await this.carService.sellCar(id, ownerBody);	
+			const selledCar = await this.carService.sellCar(id, ownerBody);
 			res.status(HttpStatus.OK).json({
 				selledCar
 			})
-			
+		}
+		catch(err) {
+			throw err;
+		}
+	}
+
+	@Post('refresh')
+	async refreshCarsInfo(@Res() res: Response) {
+		try {
+			await this.carService.removeOldOwners();
+			await this.carService.applyDiscountForCars();
+			res.status(HttpStatus.OK).json({
+				message: "sucess refresh cars info",
+			})
 		}
 		catch(err) {
 			throw err;
@@ -102,11 +114,11 @@ export class CarsController {
 	}
 
 	@Delete()
-	async deleteCarByParams(@Body() deleteParams, @Res() res: Response) {
+	async deleteAllCars(@Body() deleteParams, @Res() res: Response) {
 		try {
-			const deletedCar = await this.carService.deleteCarByParams(deleteParams);
+			const result = await this.carService.deleteAllCars();
 			res.status(HttpStatus.OK).json({
-				deletedCar
+				result,
 			})
 		}
 		catch(err) {

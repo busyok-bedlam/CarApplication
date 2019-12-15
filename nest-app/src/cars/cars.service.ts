@@ -5,7 +5,7 @@ import { Car } from './interfaces/car.interface';
 import { Owner } from './interfaces/owner.interface';
 import { Manufacturer } from './interfaces/manufacturer.interface'
 import * as mongoose from 'mongoose';
-
+import * as moment from 'moment';
 
 
 @Injectable()
@@ -45,7 +45,10 @@ export class CarsService {
 
 	async findAllCars() {
 		try {
-			let cars = await this.carModel.find().populate('manufacturer');
+			let cars = await this.carModel
+				.find()
+				.populate('manufacturer')
+				.populate('owners');
 			return cars;
 		} 
 		catch(err) {
@@ -55,7 +58,10 @@ export class CarsService {
 
 	async findOneCar(carID) {
 		try {
-			let car = await this.carModel.findOne({ "_id": carID });
+			let car = await this.carModel
+				.findById(carID)
+				.populate('manufacturer')
+				.populate('owners');
 			return car;
 		}
 		catch(err) {
@@ -84,15 +90,6 @@ export class CarsService {
 		}
 	}
 
-	async deleteCarByParams(params) {
-		try {
-			const deletedCar = await this.carModel.deleteOne({ ...params });
-			return deletedCar;
-		}
-		catch(err) {
-			throw err;
-		}
-	}
 
 	async registrateCar(id): Promise<Car> {
 		try {
@@ -112,9 +109,10 @@ export class CarsService {
 			throw err;
 		}
 	}
+
 	async updateCar(id, patch) {
 		try {
-			let updatedCar = await this.carModel.update({"_id": id}, { ...patch })
+			let updatedCar = await this.carModel.findByIdAndUpdate(id, { ...patch })
 			return updatedCar;
 		}
 		catch(err) {
@@ -132,7 +130,6 @@ export class CarsService {
 			});
 			await newOwner.save();
 			const car = await this.carModel.findByIdAndUpdate(id, {$push: { owners: ownerID }});
-
 			return car;
 
 		}
@@ -141,15 +138,69 @@ export class CarsService {
 		}
 	}
 
-	async getManufacturerDataByCarsID() {
+	async removeOldOwners() {
+		try {
+			const before = moment().subtract(18, 'month');
+			let ids = await this.ownerModel.find({
+				purchaseDate: {
+					$lt: new Date(+before),
+				}
+			}).select("_id")
+			ids = ids.map(item => item._id);
 
+			await this.carModel.updateMany({}, {
+				$pull: {
+					owners: {
+						$in: ids
+					}
+				}
+			})
+			await this.ownerModel.deleteMany({
+				'_id': {
+					$in: ids
+				}
+			})
+		}
+		catch(err) {
+			throw err;
+		}
+	} 
+
+	async applyDiscountForCars(): Promise<any> {
+		try {
+			const upLimit = + moment().subtract(12, 'month');
+			const downLimit = + moment().subtract(18, 'month');
+			const discountResult = await this.carModel.updateMany(
+				{
+					firstRegistration: {
+						$lt: new Date(upLimit),
+						$gt: new Date(downLimit)
+					}
+				}, 
+				{
+					$mul: {
+						price: 0.8
+					}
+				}
+			)
+			
+			return discountResult;
+		}
+		catch(err) {
+			throw err;
+		}
 	}
-
-	async deleteOldBuyOwner() {
-
+	async deleteAllCars(): Promise<any> {
+		try {
+			await this.carModel.deleteMany({});
+			return {
+				message: "sucess deleted all",
+			}
+			
+		}
+		catch(err) {
+			throw err;
+		}
 	}
-
-	async applyDiscountForCars() {
-
-	}
+	
 }
