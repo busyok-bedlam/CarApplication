@@ -72,7 +72,7 @@ export class CarsController {
 	}
 
 	@Put(':id/registration')
-	async registrateCar(@Res() res: Response) {
+	async registrateCar(@Param() params, @Res() res: Response) {
 		try {
 			const { id } = params;
 			const registratedCar = await this.carService.registrateCar(id);
