@@ -11,7 +11,7 @@ export class CarsController {
 	constructor(private readonly carService: CarsService){}
 
 	@Get()
-	async findAll(@Res() res, @Query() query): Promise<any>{
+	async findAll(@Res() res): Promise<any>{
 		try {
 			let cars = await this.carService.findAllCars();
 			res.status(HttpStatus.OK).json({cars});
@@ -42,7 +42,7 @@ export class CarsController {
 	}
 
 	@Post()
-	async createCar(@Body() carBody: Car, @Res() res: Response){
+	async createCar(@Body() carBody: Car, @Res() res: Response) {
 		try {
 			const car = await this.carService.createCar(carBody);
 			res.status(HttpStatus.CREATED).json({
@@ -72,7 +72,7 @@ export class CarsController {
 	}
 
 	@Put(':id/registration')
-	async registrateCar(@Param() params, @Res() res: Response) {
+	async registrateCar(@Res() res: Response) {
 		try {
 			const { id } = params;
 			const registratedCar = await this.carService.registrateCar(id);
@@ -114,7 +114,7 @@ export class CarsController {
 	}
 
 	@Delete()
-	async deleteAllCars(@Body() deleteParams, @Res() res: Response) {
+	async deleteAllCars(@Res() res: Response) {
 		try {
 			const result = await this.carService.deleteAllCars();
 			res.status(HttpStatus.OK).json({

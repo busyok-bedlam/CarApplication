@@ -69,7 +69,7 @@ export class CarsService {
 		}
 	}
 
-	async findManufacturerByCarId(carID) {
+	async findManufacturerByCarId(carID): Promise<Manufacturer> {
 		try {
 			let car = await this.carModel.findById(carID).populate('manufacturer');
 			const { manufacturer } = car;
